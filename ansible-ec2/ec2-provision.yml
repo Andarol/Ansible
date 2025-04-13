@@ -1,0 +1,70 @@
+---
+- name: Provision EC2 Instance
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    key_name: my_aws
+    region: eu-central-1
+    image: ami-04e601abe3e1a910f
+    instance_type: t2.micro
+    sec_group: wp-security-group
+    ssh_pub_key_path: ~/.ssh/id_ed25519.pub
+    ssh_priv_key_path: ~/.ssh/id_ed25519
+    ansible_user: ubuntu
+
+  tasks:
+    - name: Create security group
+      amazon.aws.ec2_security_group:
+        name: "{{ sec_group }}"
+        description: "Security group for WordPress"
+        region: "{{ region }}"
+        aws_access_key: "{{ ec2_access_key }}"
+        aws_secret_key: "{{ ec2_secret_key }}"
+        rules:
+          - proto: tcp
+            ports: [22, 80]
+            cidr_ip: 0.0.0.0/0
+
+    - name: Create key pair
+      amazon.aws.ec2_key:
+        name: "{{ key_name }}"
+        region: "{{ region }}"
+        aws_access_key: "{{ ec2_access_key }}"
+        aws_secret_key: "{{ ec2_secret_key }}"
+        key_material: "{{ lookup('file', ssh_pub_key_path) }}"
+
+    - name: Launch EC2 instance
+      amazon.aws.ec2_instance:
+        name: wordpress-instance
+        key_name: "{{ key_name }}"
+        instance_type: "{{ instance_type }}"
+        security_group: "{{ sec_group }}"
+        region: "{{ region }}"
+        image_id: "{{ image }}"
+        network:
+          assign_public_ip: true
+        aws_access_key: "{{ ec2_access_key }}"
+        aws_secret_key: "{{ ec2_secret_key }}"
+        wait: true
+      register: ec2_result
+
+    - name: Save instance IP to a file
+      copy:
+        content: "{{ ec2_result.instances[0].public_dns_name }}"
+        dest: instance_ip.txt
+
+    - name: Add instance to inventory
+      add_host:
+        name: wordpress
+        ansible_host: "{{ ec2_result.instances[0].public_dns_name }}"
+        ansible_user: "{{ ansible_user }}"
+        ansible_ssh_private_key_file: "{{ ssh_priv_key_path }}"
+        groups: wordpress
+
+    - name: Wait for SSH
+      wait_for:
+        host: "{{ ec2_result.instances[0].public_dns_name }}"
+        port: 22
+        timeout: 300

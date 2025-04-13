@@ -1,0 +1,3 @@
+---
+- import_playbook: ec2-provision.yml
+- import_playbook: wordpress-setup.yml

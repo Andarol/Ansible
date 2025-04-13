@@ -1,0 +1,88 @@
+---
+- name: Setup WordPress on EC2
+  hosts: wordpress
+  become: yes
+  vars:
+    db_name: wordpress
+    db_user: wp_user
+    db_password: wp_pass
+    wp_url: https://wordpress.org/latest.tar.gz
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+
+    - name: Install system packages
+      apt:
+        name:
+          - apache2
+          - mysql-server
+          - php
+          - php-mysql
+          - libapache2-mod-php
+          - unzip
+          - python3-pip
+        state: present
+        update_cache: yes
+
+    - name: Install PyMySQL
+      pip:
+        name: pymysql
+        executable: pip3
+
+    - name: Ensure MySQL is running
+      service:
+        name: mysql
+        state: started
+        enabled: true
+
+    - name: Create WordPress database
+      community.mysql.mysql_db:
+        name: "{{ db_name }}"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Create WordPress DB user
+      community.mysql.mysql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        priv: "{{ db_name }}.*:ALL"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Remove default Apache index.html
+      file:
+        path: /var/www/html/index.html
+        state: absent
+
+    - name: Download WordPress archive
+      get_url:
+        url: "{{ wp_url }}"
+        dest: /tmp/wordpress.tar.gz
+
+    - name: Extract WordPress to web root
+      unarchive:
+        src: /tmp/wordpress.tar.gz
+        dest: /var/www/html/
+        remote_src: yes
+        extra_opts: [--strip-components=1]
+
+    - name: Set correct ownership and permissions
+      file:
+        path: /var/www/html/
+        owner: www-data
+        group: www-data
+        mode: "0755"
+        recurse: yes
+
+    - name: Copy wp-config.php
+      template:
+        src: templates/wp-config.php.j2
+        dest: /var/www/html/wp-config.php
+        owner: www-data
+        group: www-data
+        mode: 0644
+
+    - name: Restart Apache2
+      service:
+        name: apache2
+        state: restarted
