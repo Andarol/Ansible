@@ -50,11 +50,6 @@
         wait: true
       register: ec2_result
 
-    - name: Save instance IP to a file
-      copy:
-        content: "{{ ec2_result.instances[0].public_dns_name }}"
-        dest: instance_ip.txt
-
     - name: Add instance to inventory
       add_host:
         name: wordpress
