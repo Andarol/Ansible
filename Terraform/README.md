@@ -6,7 +6,7 @@ WordPress install on EC2 via Terragrunt
 - outputs.tf # Вивід IP-адреси
 - wordpress.sh # Bash-скрипт для встановлення WordPress
 - terragrunt.hcl # Terragrunt обгортка
-.
+---
 #Розгортання:
 - terragrunt init
 - terragrunt apply
