@@ -1,6 +1,5 @@
 Ansible Runbook: WordPress на EC2
 Структура проекту:
-Ansible/
 - ec2-provision.yml         # Розгортання EC2
 - wordpress-setup.yml       # Встановлення WordPress
 - destroy.yml               # Видалення EC2
