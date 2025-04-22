@@ -1,6 +1,3 @@
-
-# user-data.sh
-
 #!/bin/bash
 apt update
 apt install -y apache2 mysql-server php php-mysql libapache2-mod-php wget unzip
