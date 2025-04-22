@@ -1,14 +1,15 @@
 Ansible Runbook: WordPress на EC2
 Структура проекту:
-Ansible/
+Ansible
 ├── ec2-provision.yml # Розгортання EC2
+
 ├── wordpress-setup.yml # Встановлення WordPress
 ├── destroy.yml # Видалення EC2
 ├── site.yml # Основний playbook
-├── group_vars/
-│ └── all/
+├── group_vars
+│ └── all
 │   └── pass.yml # Зашифровані змінні
-├── templates/ # Шаблони Jinja2
+├── templates # Шаблони Jinja2
 Vault:
 group_vars/all/pass.yml містить зашифровані змінні Ansible Vault.
 Запуск:
