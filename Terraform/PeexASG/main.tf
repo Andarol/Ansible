@@ -100,6 +100,18 @@ resource "aws_autoscaling_policy" "simple_scale_up" {
   cooldown              = 300
 }
 
+resource "aws_autoscaling_policy" "target_tracking_policy" {
+  name                   = "target-tracking-policy"
+  autoscaling_group_name = aws_autoscaling_group.asg.name
+  policy_type           = "TargetTrackingScaling"
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+    target_value = var.cpu_threshold
+  }
+}
+
 # Scheduled action: scale up at a specific time
 resource "aws_autoscaling_schedule" "scheduled_up" {
   scheduled_action_name  = "scheduled-scale-up"

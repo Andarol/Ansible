@@ -55,7 +55,7 @@ variable "public_key_path" {
 variable "scheduled_time" {
   description = "Time for scheduled scaling action (RFC3339 format, e.g., 2025-08-10T15:00:00Z)"
   type        = string
-  default     = "2025-08-11T10:00:00Z"  
+  default     = "2025-08-17T10:00:00Z"  
 }
 
 variable "security_group_name" {
@@ -86,5 +86,5 @@ variable "asg_desired_capacity" {
 variable "cpu_threshold" {
   description = "CPU utilization threshold for scaling"
   type        = number
-  default     = 70
+  default     = 30  
 }
